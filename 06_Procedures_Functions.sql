@@ -1,28 +1,30 @@
-USE UniversityEntryGateDB;
+USE UniversityEntryGate;
 
--- Procedure 1:
+-- Procedure:
 -- Record the exit of a person from the university
+
 DELIMITER //
 
 CREATE PROCEDURE RecordExit(
-    IN p_Entry_ID INT
+    IN p_entry_id INT
 )
 BEGIN
     UPDATE EntryLog
-    SET Exit_Time = NOW()
-    WHERE Entry_ID = p_Entry_ID
-      AND Exit_Time IS NULL;
+    SET exit_time = NOW()
+    WHERE entry_id = p_entry_id
+      AND exit_time IS NULL;
 END //
 
 DELIMITER ;
 
 
--- Function 1:
+-- Function:
 -- Calculate the duration of a visit in minutes
+
 DELIMITER //
 
 CREATE FUNCTION VisitDuration(
-    p_Entry_ID INT
+    p_entry_id INT
 )
 RETURNS INT
 DETERMINISTIC
@@ -31,12 +33,12 @@ BEGIN
 
     SELECT TIMESTAMPDIFF(
         MINUTE,
-        Entry_Time,
-        Exit_Time
+        entry_time,
+        exit_time
     )
     INTO duration_minutes
     FROM EntryLog
-    WHERE Entry_ID = p_Entry_ID;
+    WHERE entry_id = p_entry_id;
 
     RETURN duration_minutes;
 END //
