@@ -1,83 +1,95 @@
-USE UniversityEntryGateDB;
+USE UniversityEntryGate;
 
 -- View 1: Security Guard View
--- Shows the basic information required by security guards
 CREATE VIEW SecurityGuardView AS
 SELECT
-    e.Entry_ID,
-    e.Entry_Type,
-    e.Entry_Time,
-    e.Exit_Time,
-    g.Gate_Name,
-    sg.Guard_Name,
-    e.Purpose
+    e.entry_id,
+    e.person_name,
+    e.person_type,
+    e.entry_time,
+    e.exit_time,
+    g.gate_name,
+    sg.guard_name,
+    e.purpose
 FROM EntryLog e
 JOIN Gate g
-    ON e.Gate_ID = g.Gate_ID
+    ON e.gate_id = g.gate_id
 JOIN SecurityGuard sg
-    ON e.Guard_ID = sg.Guard_ID;
+    ON e.guard_id = sg.guard_id;
 
 
--- View 2: Student Entry View
--- Shows student entry and exit information
-CREATE VIEW StudentEntryView AS
+-- View 2: Entry Details View
+CREATE VIEW EntryDetailsView AS
 SELECT
-    s.Student_Name,
-    s.Roll_No,
-    s.Department,
-    s.Course,
-    g.Gate_Name,
-    e.Entry_Time,
-    e.Exit_Time,
-    e.Purpose
-FROM Student s
-JOIN EntryLog e
-    ON s.Student_ID = e.Student_ID
+    e.entry_id,
+    e.person_name,
+    e.person_type,
+    e.phone,
+    g.gate_name,
+    g.location,
+    sg.guard_name,
+    sg.shift,
+    e.entry_time,
+    e.exit_time,
+    e.purpose
+FROM EntryLog e
 JOIN Gate g
-    ON e.Gate_ID = g.Gate_ID;
+    ON e.gate_id = g.gate_id
+JOIN SecurityGuard sg
+    ON e.guard_id = sg.guard_id;
 
 
--- View 3: Visitor Entry View
--- Shows visitor information and visit details
-CREATE VIEW VisitorEntryView AS
+-- View 3: Vehicle Entry View
+CREATE VIEW VehicleEntryView AS
 SELECT
-    v.Visitor_Name,
-    v.Phone,
-    v.Purpose,
-    g.Gate_Name,
-    e.Entry_Time,
-    e.Exit_Time
-FROM Visitor v
-JOIN EntryLog e
-    ON v.Visitor_ID = e.Visitor_ID
+    e.entry_id,
+    e.person_name,
+    e.person_type,
+    v.vehicle_number,
+    v.vehicle_type,
+    v.owner_name,
+    g.gate_name,
+    e.entry_time,
+    e.exit_time
+FROM EntryLog e
+JOIN Vehicle v
+    ON e.vehicle_id = v.vehicle_id
 JOIN Gate g
-    ON e.Gate_ID = g.Gate_ID;
+    ON e.gate_id = g.gate_id;
 
 
--- View 4: Management Resource View
--- Provides entry statistics for management
-CREATE VIEW ManagementResourceView AS
+-- View 4: Gate Statistics View
+CREATE VIEW GateStatisticsView AS
 SELECT
-    g.Gate_Name,
-    COUNT(e.Entry_ID) AS Total_Entries,
-    COUNT(CASE WHEN e.Entry_Type = 'Student' THEN 1 END) AS Student_Entries,
-    COUNT(CASE WHEN e.Entry_Type = 'Visitor' THEN 1 END) AS Visitor_Entries
+    g.gate_id,
+    g.gate_name,
+    g.location,
+    g.status,
+    COUNT(e.entry_id) AS total_entries
 FROM Gate g
 LEFT JOIN EntryLog e
-    ON g.Gate_ID = e.Gate_ID
-GROUP BY g.Gate_ID, g.Gate_Name;
+    ON g.gate_id = e.gate_id
+GROUP BY
+    g.gate_id,
+    g.gate_name,
+    g.location,
+    g.status;
 
 
 -- View 5: Currently Inside View
--- Shows people who have entered but have not exited
 CREATE VIEW CurrentlyInsideView AS
 SELECT
-    e.Entry_ID,
-    e.Entry_Type,
-    e.Entry_Time,
-    e.Purpose,
-    g.Gate_Name
+    e.entry_id,
+    e.person_name,
+    e.person_type,
+    e.phone,
+    g.gate_name,
+    sg.guard_name,
+    e.entry_time,
+    e.purpose
 FROM EntryLog e
 JOIN Gate g
-    ON e.Gate_ID = g.Gate_ID
-WHERE e.Exit_Time IS NULL;
+    ON e.gate_id = g.gate_id
+JOIN SecurityGuard sg
+    ON e.guard_id = sg.guard_id
+WHERE e.exit_time IS NULL;
